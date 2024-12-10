@@ -11,6 +11,41 @@
 #define CYTHON_HEX_VERSION 0x001D00F0
 #define CYTHON_FUTURE_DIVISION 0
 #include <stddef.h>
+#include <vector>
+#include <string>
+#include <utility>
+#include <map>
+#include <algorithm>
+#include "functions.h"
+#include <math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif /* _OPENMP */
+
+#if defined(PYREX_WITHOUT_ASSERTIONS) && !defined(CYTHON_WITHOUT_ASSERTIONS)
+#define CYTHON_WITHOUT_ASSERTIONS
+#endif
+
+typedef struct {PyObject **p; const char *s; const Py_ssize_t n; const char* encoding;
+                const char is_unicode; const char is_str; const char intern; } __Pyx_StringTabEntry;
+
+#define __PYX_DEFAULT_STRING_ENCODING_IS_ASCII 0
+#define __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT 0
+#define __PYX_DEFAULT_STRING_ENCODING ""
+#define __Pyx_PyObject_FromString __Pyx_PyBytes_FromString
+#define __Pyx_PyObject_FromStringAndSize __Pyx_PyBytes_FromStringAndSize
+#define __Pyx_uchar_cast(c) ((unsigned char)c)
+#define __Pyx_long_cast(x) ((long)x)
+#define __Pyx_fits_Py_ssize_t(v, type, is_signed)  (\
+    (sizeof(type) < sizeof(Py_ssize_t))  ||\
+    (sizeof(type) > sizeof(Py_ssize_t) &&\
+          likely(v < (type)PY_SSIZE_T_MAX ||\
+                 v == (type)PY_SSIZE_T_MAX)  &&\
+          (!is_signed || likely(v > (type)PY_SSIZE_T_MIN ||\
+                                v == (type)PY_SSIZE_T_MIN)))  ||\
+    (sizeof(type) == sizeof(Py_ssize_t) &&\
+          (is_signed || likely(v < (type)PY_SSIZE_T_MAX ||\
+                              v == (type)PY_SSIZE_T_MAX))))
 #ifndef offsetof
   #define offsetof(type, member) ( (size_t) & ((type*)0) -> member )
 #endif

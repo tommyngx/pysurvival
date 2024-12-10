@@ -11,6 +11,7 @@ import codecs
 import re
 import glob
 from setuptools import setup, Extension, find_packages
+import subprocess
 
 # Checking if numpy is installed
 try:
@@ -123,7 +124,6 @@ ext_modules = [
   ),
   ]
 
-# Setup 
 # Setup 
 setup(
     name=NAME,
