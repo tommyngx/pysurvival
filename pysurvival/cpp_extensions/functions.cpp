@@ -30,12 +30,9 @@ vector<int>  argsort(vector<double> v, bool descending){
     size_t n = v.size();
     vector<double> temp_v;
 
-    if(descending){
-    	for (int i = 0; i < n; ++i){
-    		temp_v.push_back(-v[i]);
-    	}
-    	v = temp_v;
-    }
+    if (descending) {
+    	std::sort(a.begin(), a.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
+	}
 
     for (int i = 0; i < n; ++i){
     	a.push_back(make_pair(v[i], i));
@@ -82,7 +79,8 @@ double random_double(double low, double high){
 	 Random number generator that produces integer values according 
 	 to a uniform discrete distribution in the interval [low, high] inclusive
 	*/
-	long seed_value = long(clock()); 
+
+	auto seed_value = static_cast<long>(std::chrono::system_clock::now().time_since_epoch().count());
 	mt19937 engine;
 	engine.seed(seed_value);
 	uniform_real_distribution<double> unif(low, high);
