@@ -9,6 +9,7 @@ import re
 import glob
 from setuptools import setup, Extension, find_packages
 import platform
+import subprocess
 
 # Version handling
 VERSION = '0.2.0'
@@ -62,6 +63,13 @@ def read_version(*file_paths):
 extra_compile_args = ['-std=c++14', '-O3']
 if platform.system() == 'Darwin':  # macOS specific flags
     extra_compile_args.extend(['-stdlib=libc++', '-mmacosx-version-min=10.9'])
+
+# Add flags to handle deprecated Unicode APIs
+extra_compile_args.extend([
+    '-DPy_LIMITED_API=0x030A0000',  # Python 3.10
+    '-DCYTHON_UNICODE_WCHAR_T',  # Use modern Unicode APIs
+    '-DCYTHON_UNICODE_WIDE',  # Use wide Unicode
+])
 
 # Define extensions
 ext_modules = [
