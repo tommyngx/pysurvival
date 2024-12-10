@@ -35,8 +35,13 @@ CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Utility functions
 def read_long_description():
-    with open(CURRENT_DIR + 'LONG_DESCRIPTION.txt', 'r') as f:
-        return f.read()
+    """Read long description from file or return short description if file not found"""
+    try:
+        description_path = os.path.join(CURRENT_DIR, 'LONG_DESCRIPTION.txt')
+        with open(description_path, 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        return DESCRIPTION  # Fall back to short description
 
 def install_requires():
 	with open(CURRENT_DIR + 'requirements.txt', 'r') as requirements_file:
@@ -125,6 +130,7 @@ setup(
     name=NAME,
     version=VERSION,
     description=DESCRIPTION,
+    long_description=read_long_description(),
     author=AUTHOR,
     author_email=EMAIL,
     url=URL,
@@ -138,7 +144,6 @@ setup(
     ],
     python_requires='>=3.7',
     include_package_data=True,
-    long_description=read_long_description(),
     license=LICENSE,
     package_data={'': ['*.csv'],},
     extras_require={'tests': ['pytest', 'pytest-pep8',]},
@@ -152,7 +157,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',  # Add Python 3.10
+        'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
