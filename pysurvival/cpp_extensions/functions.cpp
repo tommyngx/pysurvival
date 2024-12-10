@@ -3,8 +3,8 @@
 #include <iterator>   // begin, end, and ostream_iterator
 #include <functional> // bind
 #include <iostream>   // cout
-#include <ctime> 	  //clock
-#include <math.h>       /* exp */
+#include <chrono>      // For time-based operations
+#include <cmath>       /* exp */
 #include <map>
 #include <utility>
 #include <set>
@@ -14,8 +14,10 @@
 #include <numeric>
 #include <limits>
 #include <random>
-#include <math.h>       /* fabs */
+#include <cmath>        /* fabs */
 #include "functions.h"
+#include <algorithm>   // Ensure for sort and reverse
+
 
 using namespace std;
 
@@ -67,9 +69,9 @@ long random_int(long low, long high){
 	 Random number generator that produces integer values according 
 	 to a uniform discrete distribution in the interval [low, high] inclusive
 	*/
-	long seed_value = long(clock()); 
-	mt19937 engine;
-	engine.seed(seed_value);
+	std::random_device rd; // Better seed source
+	std::mt19937 engine(rd());
+
 	uniform_int_distribution<long> unif(low, high);
 	return  unif(engine) ; 
 }
@@ -105,8 +107,8 @@ int argmin_buckets(double x, vector<pair<double, double> > buckets){
 	double a, min_value = numeric_limits<double>::max();
 	for (int j = 0; j < J; ++j){
 		a = buckets[j].first;
-		if(fabs(x-a)<= min_value){
-			min_value = fabs(x-a);
+		if(std::abs(x-a)<= min_value){
+			min_value = std::abs(x-a);
 			index_x = j;
 		}
 	}
