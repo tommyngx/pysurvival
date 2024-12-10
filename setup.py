@@ -1,28 +1,28 @@
 #! /usr/bin/env python
 #
 # Copyright 2019 Square Inc.
-
-# Apache License
-# Version 2.0, January 2004
-# http://www.apache.org/licenses/
+# Apache License Version 2.0
 
 import os
 import codecs
 import re
 import glob
 from setuptools import setup, Extension, find_packages
-import subprocess
+import platform
 
-# Checking if numpy is installed
+# Version handling
+VERSION = '0.2.0'
+
+# Get numpy include directory safely
 try:
-  import numpy
-except:
-  import subprocess
-  print("numpy is not installed. So pysurvival will install it now.")
-  subprocess.call("pip install numpy", shell=True)
-  import numpy
+    import numpy
+    numpy_include = numpy.get_include()
+except ImportError:
+    subprocess.check_call(['pip', 'install', 'numpy'])
+    import numpy
+    numpy_include = numpy.get_include()
 
-# Package meta-data.
+# Package meta-data
 NAME = 'pysurvival'
 DESCRIPTION = 'Open source package for Survival Analysis modeling'
 URL = 'https://www.pysurvival.io'
@@ -31,10 +31,7 @@ AUTHOR = 'steph-likes-git'
 LICENSE = "Apache Software License (Apache 2.0)"
 
 # Current Directory
-try:
-    CURRENT_DIR = os.path.dirname(os.path.realpath(__file__)) + '/'
-except:
-    CURRENT_DIR = os.path.dirname(os.path.realpath('__file__')) + '/'
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Utility functions
 def read_long_description():
@@ -56,86 +53,93 @@ def read_version(*file_paths):
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
-# Extensions Compilation arguments #
-extra_compile_args = ['-std=c++11', "-O3"] 
+# Compiler settings
+extra_compile_args = ['-std=c++14', '-O3']
+if platform.system() == 'Darwin':  # macOS specific flags
+    extra_compile_args.extend(['-stdlib=libc++', '-mmacosx-version-min=10.9'])
 
-# Extensions info #
-ext_modules = [ 
-
-  Extension( 
-    name = "pysurvival.utils._functions",
-    sources = ["pysurvival/cpp_extensions/_functions.cpp",
-               "pysurvival/cpp_extensions/functions.cpp" ,
-               ],
-    extra_compile_args = extra_compile_args, 
-    language="c++", 
-  ),
-
-  Extension( 
-    name = "pysurvival.utils._metrics",
-    sources = ["pysurvival/cpp_extensions/_metrics.cpp",
-               "pysurvival/cpp_extensions/non_parametric.cpp",
-               "pysurvival/cpp_extensions/metrics.cpp",
-               "pysurvival/cpp_extensions/functions.cpp",
-              ],
-    extra_compile_args = extra_compile_args, 
-    language="c++", 
+# Define extensions
+ext_modules = [
+    Extension(
+        name="pysurvival.utils._functions",
+        sources=glob.glob("pysurvival/cpp_extensions/_functions*.cpp") + 
+                glob.glob("pysurvival/cpp_extensions/functions*.cpp"),
+        include_dirs=[numpy_include],
+        extra_compile_args=extra_compile_args,
+        language="c++",
     ),
+    Extension( 
+        name = "pysurvival.utils._metrics",
+        sources = ["pysurvival/cpp_extensions/_metrics.cpp",
+                   "pysurvival/cpp_extensions/non_parametric.cpp",
+                   "pysurvival/cpp_extensions/metrics.cpp",
+                   "pysurvival/cpp_extensions/functions.cpp",
+                  ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
+        include_dirs=[numpy_include],
+    ),
+    Extension( 
+        name = "pysurvival.models._non_parametric",
+        sources = ["pysurvival/cpp_extensions/_non_parametric.cpp",
+                   "pysurvival/cpp_extensions/non_parametric.cpp",
+                   "pysurvival/cpp_extensions/functions.cpp" 
+                   ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
+        include_dirs=[numpy_include],
+    ),
+    Extension( 
+        name = "pysurvival.models._survival_forest",
+        sources = [ "pysurvival/cpp_extensions/_survival_forest.cpp",
+                    "pysurvival/cpp_extensions/survival_forest_data.cpp",
+                    "pysurvival/cpp_extensions/survival_forest_utility.cpp",
+                    "pysurvival/cpp_extensions/survival_forest_tree.cpp",
+                    "pysurvival/cpp_extensions/survival_forest.cpp", 
+                    ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
+        include_dirs=[numpy_include],
+    ),
+    Extension( 
+        name = "pysurvival.models._coxph",
+        sources = [ "pysurvival/cpp_extensions/_coxph.cpp",
+                    "pysurvival/cpp_extensions/functions.cpp" 
+                  ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
+        include_dirs=[numpy_include],
+    ),
+    Extension( 
+        name = "pysurvival.models._svm",
+        sources = [ "pysurvival/cpp_extensions/_svm.cpp", 
+                  ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
+        include_dirs=[numpy_include],
+    ),
+]
 
-  Extension( 
-    name = "pysurvival.models._non_parametric",
-    sources = ["pysurvival/cpp_extensions/_non_parametric.cpp",
-               "pysurvival/cpp_extensions/non_parametric.cpp",
-               "pysurvival/cpp_extensions/functions.cpp" 
-               ],
-    extra_compile_args = extra_compile_args, 
-    language="c++", 
-  ),
-
-  Extension( 
-    name = "pysurvival.models._survival_forest",
-    sources = [ "pysurvival/cpp_extensions/_survival_forest.cpp",
-                "pysurvival/cpp_extensions/survival_forest_data.cpp",
-                "pysurvival/cpp_extensions/survival_forest_utility.cpp",
-                "pysurvival/cpp_extensions/survival_forest_tree.cpp",
-                "pysurvival/cpp_extensions/survival_forest.cpp", 
-                ],
-    extra_compile_args = extra_compile_args, 
-    language="c++", 
-  ),
-
-  Extension( 
-    name = "pysurvival.models._coxph",
-    sources = [ "pysurvival/cpp_extensions/_coxph.cpp",
-                "pysurvival/cpp_extensions/functions.cpp" 
-              ],
-    extra_compile_args = extra_compile_args, 
-    language="c++", 
-    include_dirs=[numpy.get_include()],
-  ),
-
-  Extension( 
-    name = "pysurvival.models._svm",
-    sources = [ "pysurvival/cpp_extensions/_svm.cpp", 
-              ],
-    extra_compile_args = extra_compile_args, 
-    language="c++", 
-    include_dirs=[numpy.get_include()],
-  ),
-  ]
-
-# Setup 
+# Setup configuration
 setup(
     name=NAME,
-    version=read_version("pysurvival", "__init__.py"),
+    version=VERSION,
     description=DESCRIPTION,
-    long_description=read_long_description(),
     author=AUTHOR,
     author_email=EMAIL,
     url=URL,
-    license=LICENSE,
-    install_requires=install_requires(),
+    packages=find_packages(exclude=('tests',)),
+    ext_modules=ext_modules,
+    install_requires=[
+        'numpy>=1.21.0',
+        'scipy>=1.8.0',
+        'pandas>=1.4.0',
+        'scikit-learn>=1.0.2',
+    ],
+    python_requires='>=3.7',
     include_package_data=True,
+    long_description=read_long_description(),
+    license=LICENSE,
     package_data={'': ['*.csv'],},
     extras_require={'tests': ['pytest', 'pytest-pep8',]},
     classifiers=[
@@ -144,19 +148,15 @@ setup(
         'Intended Audience :: Science/Research',
         'Operating System :: MacOS',
         'Operating System :: Unix',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',  # Add this line
+        'Programming Language :: Python :: 3.10',  # Add Python 3.10
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
         'Topic :: Software Development',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    packages=find_packages(),
-    ext_modules=ext_modules,
 )
