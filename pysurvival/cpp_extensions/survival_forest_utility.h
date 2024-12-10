@@ -29,7 +29,7 @@ namespace ranger {
    * @param end maximum value
    * @param num_parts number of parts
    */
-  void equalSplit(std::vector<uint>& result, uint start, uint end, uint num_parts);
+    void equalSplit(std::vector<unsigned int>& result, unsigned int start, unsigned int end, unsigned int num_parts);
 
   /**
    * Draw random numbers in a range without replacement and skip values.

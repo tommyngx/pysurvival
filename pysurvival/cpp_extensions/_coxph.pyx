@@ -15,6 +15,7 @@ from libcpp.pair cimport pair
 from libcpp.map cimport map
 from libcpp cimport bool
 from libcpp.algorithm cimport sort
+from libcpp.set cimport set
 
 
 # Importing C++ specific functions
