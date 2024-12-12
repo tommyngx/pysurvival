@@ -45,8 +45,9 @@ cdef class CoxPHModel:
         for i in range(events.shape[0]):
             c_events.push_back(events[i])
 
+        cdef vector[double] row  # Declare vector outside the loop
         for i in range(covariates.shape[0]):
-            cdef vector[double] row
+            row.clear()  # Clear the vector to reuse it
             for j in range(covariates.shape[1]):
                 row.push_back(covariates[i, j])
             c_covariates.push_back(row)
