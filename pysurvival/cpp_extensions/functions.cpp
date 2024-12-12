@@ -3,8 +3,8 @@
 #include <iterator>   // begin, end, and ostream_iterator
 #include <functional> // bind
 #include <iostream>   // cout
-#include <chrono>      // For time-based operations
-#include <cmath>       /* exp */
+#include <ctime> 	  //clock
+#include <math.h>       /* exp */
 #include <map>
 #include <utility>
 #include <set>
@@ -14,10 +14,8 @@
 #include <numeric>
 #include <limits>
 #include <random>
-#include <cmath>        /* fabs */
+#include <math.h>       /* fabs */
 #include "functions.h"
-#include <algorithm>   // Ensure for sort and reverse
-
 
 using namespace std;
 
@@ -30,9 +28,12 @@ vector<int>  argsort(vector<double> v, bool descending){
     size_t n = v.size();
     vector<double> temp_v;
 
-    if (descending) {
-    	std::sort(a.begin(), a.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
-	}
+    if(descending){
+    	for (int i = 0; i < n; ++i){
+    		temp_v.push_back(-v[i]);
+    	}
+    	v = temp_v;
+    }
 
     for (int i = 0; i < n; ++i){
     	a.push_back(make_pair(v[i], i));
@@ -66,9 +67,9 @@ long random_int(long low, long high){
 	 Random number generator that produces integer values according 
 	 to a uniform discrete distribution in the interval [low, high] inclusive
 	*/
-	std::random_device rd; // Better seed source
-	std::mt19937 engine(rd());
-
+	long seed_value = long(clock()); 
+	mt19937 engine;
+	engine.seed(seed_value);
 	uniform_int_distribution<long> unif(low, high);
 	return  unif(engine) ; 
 }
@@ -79,8 +80,7 @@ double random_double(double low, double high){
 	 Random number generator that produces integer values according 
 	 to a uniform discrete distribution in the interval [low, high] inclusive
 	*/
-
-	auto seed_value = static_cast<long>(std::chrono::system_clock::now().time_since_epoch().count());
+	long seed_value = long(clock()); 
 	mt19937 engine;
 	engine.seed(seed_value);
 	uniform_real_distribution<double> unif(low, high);
@@ -105,8 +105,8 @@ int argmin_buckets(double x, vector<pair<double, double> > buckets){
 	double a, min_value = numeric_limits<double>::max();
 	for (int j = 0; j < J; ++j){
 		a = buckets[j].first;
-		if(std::abs(x-a)<= min_value){
-			min_value = std::abs(x-a);
+		if(fabs(x-a)<= min_value){
+			min_value = fabs(x-a);
 			index_x = j;
 		}
 	}
