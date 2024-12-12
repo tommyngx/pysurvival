@@ -56,7 +56,15 @@ def read_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 # Compiler settings
-extra_compile_args = ['-std=c++14', '-O3']
+extra_compile_args = [
+    '-std=c++14',
+    '-O3',
+    '-Wall',
+    '-Wno-unused-function',  # Suppress unused function warnings
+    '-fPIC',
+    '-DPY_LIMITED_API=0x030A0000',
+    '-DCYTHON_USE_TYPE_SLOTS=1'
+]
 if platform.system() == 'Darwin':  # macOS specific flags
     extra_compile_args.extend(['-stdlib=libc++', '-mmacosx-version-min=10.9'])
 
