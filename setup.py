@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 #
-# Copyright 2019 Square Inc.
-# Apache License Version 2.0
+# Updated for Python 3.10 compatibility
 
 import os
 import codecs
@@ -45,9 +44,9 @@ def read_long_description():
         return DESCRIPTION  # Fall back to short description
 
 def install_requires():
-	with open(CURRENT_DIR + 'requirements.txt', 'r') as requirements_file:
-	    requirements = requirements_file.readlines()
-	return requirements
+    with open(os.path.join(CURRENT_DIR, 'requirements.txt'), 'r') as requirements_file:
+        requirements = requirements_file.readlines()
+    return requirements
 
 def read_version(*file_paths):
     with codecs.open(os.path.join(CURRENT_DIR, *file_paths), 'r') as fp:
@@ -64,11 +63,10 @@ extra_compile_args = ['-std=c++14', '-O3']
 if platform.system() == 'Darwin':  # macOS specific flags
     extra_compile_args.extend(['-stdlib=libc++', '-mmacosx-version-min=10.9'])
 
-# Add flags to handle deprecated Unicode APIs
+# Python 3.10 compatibility: Remove Py_LIMITED_API
 extra_compile_args.extend([
-    '-DPy_LIMITED_API=0x030A0000',  # Python 3.10
     '-DCYTHON_UNICODE_WCHAR_T',  # Use modern Unicode APIs
-    '-DCYTHON_UNICODE_WIDE',  # Use wide Unicode
+    '-DCYTHON_UNICODE_WIDE',  # Use wide Unicode APIs
 ])
 
 # Define extensions
