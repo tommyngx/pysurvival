@@ -3,14 +3,42 @@
 #ifndef PYSURVIVAL_FUNCTIONS_CPP
 #define PYSURVIVAL_FUNCTIONS_CPP
 
-
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "longintrepr.h"  // For PyLong_SHIFT
 #include <numpy/arrayobject.h>
+
+// PyLong definitions if not available
+#ifndef PyLong_SHIFT
+#define PyLong_SHIFT 15
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Add digit type definition
+typedef uint32_t digit;
+typedef struct _longobject PyLongObject;
+
+// Function to get digits from PyLong object
+static digit* get_digits(PyObject* obj) {
+    return ((PyLongObject*)obj)->ob_digit;
+}
+
+// Add conversion functions
+static Py_ssize_t __Pyx_PyInt_As_Py_ssize_t(PyObject* x) {
+    const digit* digits = get_digits(x);
+    Py_ssize_t result;
+    
+    if (8 * sizeof(Py_ssize_t) > 2 * PyLong_SHIFT) {
+        return (Py_ssize_t)(((((size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0]));
+    }
+    result = (Py_ssize_t)digits[0];
+    return result;
+}
+
+// Rest of your existing code...
 
 // Function declarations with attributes to prevent unused warnings
 static PyObject* __attribute__((used)) __Pyx_CyFunction_Vectorcall_FASTCALL_KEYWORDS_METHOD(
@@ -412,7 +440,7 @@ class __Pyx_FakeReference {
 #if CYTHON_COMPILING_IN_PYPY && !defined(PyObject_Malloc)
   #define PyObject_Malloc(s)   PyMem_Malloc(s)
   #define PyObject_Free(p)     PyMem_Free(p)
-  #define PyObject_Realloc(p)  PyMem_Realloc(p)
+  #define PyObject_Realloc(p,n)  PyMem_Realloc(p,n)
 #endif
 #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX < 0x030400A1
   #define PyMem_RawMalloc(n)           PyMem_Malloc(n)
