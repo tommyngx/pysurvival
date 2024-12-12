@@ -6,7 +6,6 @@
 import numpy as np
 cimport numpy as cnp
 from libcpp.vector cimport vector
-from libcpp.utility cimport pair
 
 # Declare the external C++ class
 cdef extern from "_coxph.cpp":
@@ -19,18 +18,31 @@ cdef extern from "_coxph.cpp":
 cdef class CoxPHModel:
     cdef _CoxPHModel* cpp_model
 
+    cdef void init_model(self):
+        """
+        Allocate memory for the C++ model.
+        """
+        self.cpp_model = new _CoxPHModel()
+
+    cdef void destroy_model(self):
+        """
+        Free memory for the C++ model.
+        """
+        if self.cpp_model is not NULL:
+            del self.cpp_model
+            self.cpp_model = NULL
+
     def __cinit__(self):
         """
-        Initialize the C++ model.
+        Initialize the Python class and the C++ model.
         """
-        self.cpp_model = new _CoxPHModel()  # Allocate memory for the C++ class.
+        self.init_model()
 
     def __dealloc__(self):
         """
-        Clean up the C++ model.
+        Clean up the Python class and the C++ model.
         """
-        if self.cpp_model is not NULL:  # Ensure the pointer is valid.
-            del self.cpp_model  # Free the allocated memory.
+        self.destroy_model()
 
     def fit(self, cnp.ndarray[cnp.float64_t, ndim=1] times, 
                   cnp.ndarray[cnp.float64_t, ndim=1] events, 
