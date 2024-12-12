@@ -23,14 +23,14 @@ cdef class CoxPHModel:
         """
         Initialize the C++ model.
         """
-        self.cpp_model = _CoxPHModel()  # Use `_CoxPHModel` directly, no `new`.
+        self.cpp_model = new _CoxPHModel()  # Allocate memory for the C++ class.
 
     def __dealloc__(self):
         """
         Clean up the C++ model.
         """
-        if self.cpp_model is not None:
-            del self.cpp_model
+        if self.cpp_model is not NULL:  # Ensure the pointer is valid.
+            del self.cpp_model  # Free the allocated memory.
 
     def fit(self, cnp.ndarray[cnp.float64_t, ndim=1] times, 
                   cnp.ndarray[cnp.float64_t, ndim=1] events, 
