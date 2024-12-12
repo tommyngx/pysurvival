@@ -40,10 +40,10 @@ cdef class CoxPHModel:
 
         # Convert NumPy arrays to C++ vectors
         for i in range(data.shape[0]):
-                row.clear()  # Clear the vector to reuse it
-                for j in range(data.shape[1]):
-                    row.push_back(data[i, j])
-                c_data.push_back(row)
+            row.clear()  # Clear the vector to reuse it
+            for j in range(data.shape[1]):
+                row.push_back(data[i, j])
+            c_data.push_back(row)
 
         # Convert 2D NumPy array to C++ vector of vectors
         cdef vector[double] row  # Declare vector outside the loop
