@@ -42,17 +42,16 @@ cdef class CoxPHModel:
         if self.cpp_model is not NULL:
             del self.cpp_model
 
+    # Fit the model
     def fit_model(self, ndarray[float64_t, ndim=1] times, 
-                  ndarray[float64_t, ndim=1] events, 
-                  ndarray[float64_t, ndim=2] covariates):
+                ndarray[float64_t, ndim=1] events, 
+                ndarray[float64_t, ndim=2] covariates):
         """
         Fit the Cox Proportional Hazards model.
-        :param times: Array of time-to-event data
-        :param events: Array of event indicators (1 for event, 0 for censored)
-        :param covariates: 2D array of covariates
         """
         cdef vector[double] c_times, c_events, c_coefficients
         cdef vector[vector[double]] c_covariates
+        cdef vector[double] row  # Declare the vector here
         cdef double c_log_likelihood
 
         # Convert 1D NumPy arrays to C++ vectors
@@ -63,7 +62,7 @@ cdef class CoxPHModel:
 
         # Convert 2D NumPy array to C++ vector of vectors
         for i in range(covariates.shape[0]):
-            cdef vector[double] row
+            row.clear()  # Clear the vector before reuse
             for j in range(covariates.shape[1]):
                 row.push_back(covariates[i, j])
             c_covariates.push_back(row)
