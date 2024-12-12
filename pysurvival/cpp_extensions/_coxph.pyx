@@ -51,14 +51,22 @@ cdef class CoxPHModel:
         :param events: Array of event indicators (1 for event, 0 for censored)
         :param covariates: 2D array of covariates
         """
-        cdef vector[double] c_times = vector[double](times)
-        cdef vector[double] c_events = vector[double](events)
+        cdef vector[double] c_times, c_events, c_coefficients
         cdef vector[vector[double]] c_covariates
-        cdef vector[double] c_coefficients
         cdef double c_log_likelihood
 
-        for row in covariates:
-            c_covariates.push_back(vector[double](row))
+        # Convert 1D NumPy arrays to C++ vectors
+        for i in range(times.shape[0]):
+            c_times.push_back(times[i])
+        for i in range(events.shape[0]):
+            c_events.push_back(events[i])
+
+        # Convert 2D NumPy array to C++ vector of vectors
+        for i in range(covariates.shape[0]):
+            cdef vector[double] row
+            for j in range(covariates.shape[1]):
+                row.push_back(covariates[i, j])
+            c_covariates.push_back(row)
 
         # Call the C++ fit_model function
         self.cpp_model.fit_model(c_times, c_events, c_covariates, c_coefficients, c_log_likelihood)
@@ -72,7 +80,7 @@ cdef class CoxPHModel:
         """
         cdef vector[double] c_hazards
         self.cpp_model.get_baseline_hazard(c_hazards)
-        return np.array(c_hazards)
+        return np.array([c_hazards[i] for i in range(len(c_hazards))])
 
     def get_baseline_survival(self):
         """
@@ -81,7 +89,7 @@ cdef class CoxPHModel:
         """
         cdef vector[double] c_survivals
         self.cpp_model.get_baseline_survival(c_survivals)
-        return np.array(c_survivals)
+        return np.array([c_survivals[i] for i in range(len(c_survivals))])
 
     def predict(self, ndarray[float64_t, ndim=2] data):
         """
@@ -92,8 +100,12 @@ cdef class CoxPHModel:
         cdef vector[vector[double]] c_data
         cdef vector[double] c_predictions
 
-        for row in data:
-            c_data.push_back(vector[double](row))
+        # Convert 2D NumPy array to C++ vector of vectors
+        for i in range(data.shape[0]):
+            cdef vector[double] row
+            for j in range(data.shape[1]):
+                row.push_back(data[i, j])
+            c_data.push_back(row)
 
         self.cpp_model.predict(c_data, c_predictions)
-        return np.array(c_predictions)
+        return np.array([c_predictions[i] for i in range(len(c_predictions))])
