@@ -27,7 +27,8 @@ cdef class CoxPHModel:
         if self.cpp_model:
             del self.cpp_model
 
-    def fit(self, ndarray[np.float64_t, ndim=1] times, 
+    def fit(self, 
+            ndarray[np.float64_t, ndim=1] times, 
             ndarray[np.float64_t, ndim=1] events, 
             ndarray[np.float64_t, ndim=2] covariates):
         """
@@ -36,23 +37,22 @@ cdef class CoxPHModel:
         cdef vector[double] c_times = vector[double](times.shape[0])
         cdef vector[double] c_events = vector[double](events.shape[0])
         cdef vector[vector[double]] c_covariates
+        cdef vector[double] row  # Declare vector outside the loop
         cdef int i, j
 
-        # Convert NumPy arrays to C++ vectors
-        for i in range(data.shape[0]):
-            row.clear()  # Clear the vector to reuse it
-            for j in range(data.shape[1]):
-                row.push_back(data[i, j])
-            c_data.push_back(row)
+        # Convert 1D NumPy arrays to C++ vectors
+        for i in range(times.shape[0]):
+            c_times.push_back(times[i])
+            c_events.push_back(events[i])
 
         # Convert 2D NumPy array to C++ vector of vectors
-        cdef vector[double] row  # Declare vector outside the loop
         for i in range(covariates.shape[0]):
             row.clear()  # Clear the vector to reuse it
             for j in range(covariates.shape[1]):
                 row.push_back(covariates[i, j])
             c_covariates.push_back(row)
 
+        # Fit the model using the C++ implementation
         self.cpp_model.fit_model(c_times, c_events, c_covariates)
 
     def compute_log_likelihood(self) -> float:
