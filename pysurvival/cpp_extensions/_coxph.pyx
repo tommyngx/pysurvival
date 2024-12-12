@@ -1,91 +1,85 @@
+# Updated _coxph.pyx for proper initialization and memory handling
+
 from libcpp.vector cimport vector
-from libcpp.string cimport string
+from libcpp cimport bool
+from libcpp.utility cimport pair
 from libc.stdlib cimport malloc, free
-from libc.stdint cimport int64_t
+from libc.string cimport memset
+from numpy cimport ndarray
 import numpy as np
-cimport numpy as cnp
-
-ctypedef cnp.float64_t DTYPE_t  # Define data type
-
 cdef extern from "functions.h":
     cdef cppclass _CoxPHModel:
-        _CoxPHModel()  # Constructor
-        void fit_model(
-            vector[double] times,
-            vector[double] events,
-            vector[vector[double]] covariates,
-            vector[double] coefficients,
-            double& log_likelihood
-        )
-        void predict_risk(
-            vector[vector[double]] data,
-            vector[double]& predictions
-        )
+        _CoxPHModel() except +
+        void fit_model(vector[double], vector[double], vector[vector[double]])
+        double compute_log_likelihood()
+        vector[double] predict(vector[vector[double]])
+        void clear()
 
 cdef class CoxPHModel:
-    cdef _CoxPHModel cpp_model
+    cdef _CoxPHModel* cpp_model
 
     def __cinit__(self):
-        """
-        Initialize the C++ model.
-        """
-        self.cpp_model = _CoxPHModel()
+        self.cpp_model = new _CoxPHModel()
+        if not self.cpp_model:
+            raise MemoryError("Failed to allocate memory for _CoxPHModel")
 
     def __dealloc__(self):
-        """
-        Clean up the C++ model.
-        """
-        # Nothing to do as Cython automatically cleans up stack-allocated objects
+        if self.cpp_model:
+            del self.cpp_model
 
-    def fit_model(self, 
-                  cnp.ndarray[DTYPE_t, ndim=1] times,
-                  cnp.ndarray[DTYPE_t, ndim=1] events,
-                  cnp.ndarray[DTYPE_t, ndim=2] covariates):
+    def fit(self, ndarray[np.float64_t, ndim=1] times, 
+            ndarray[np.float64_t, ndim=1] events, 
+            ndarray[np.float64_t, ndim=2] covariates):
         """
-        Fit the Cox Proportional Hazards model.
+        Fit the Cox proportional hazards model using the provided data.
         """
-        cdef vector[double] c_times, c_events, c_coefficients
+        cdef vector[double] c_times = vector[double](times.shape[0])
+        cdef vector[double] c_events = vector[double](events.shape[0])
         cdef vector[vector[double]] c_covariates
-        cdef double c_log_likelihood = 0.0
-        cdef vector[double] row
+        cdef int i, j
 
-        # Convert 1D NumPy arrays to C++ vectors
+        # Convert NumPy arrays to C++ vectors
         for i in range(times.shape[0]):
             c_times.push_back(times[i])
+
         for i in range(events.shape[0]):
             c_events.push_back(events[i])
 
-        # Convert 2D NumPy array to C++ vector of vectors
         for i in range(covariates.shape[0]):
-            row.clear()
+            cdef vector[double] row
             for j in range(covariates.shape[1]):
                 row.push_back(covariates[i, j])
             c_covariates.push_back(row)
 
-        # Call the C++ fit_model function
-        self.cpp_model.fit_model(c_times, c_events, c_covariates, c_coefficients, c_log_likelihood)
+        self.cpp_model.fit_model(c_times, c_events, c_covariates)
 
-        return np.array(c_coefficients), c_log_likelihood
-
-    def predict_risk(self, 
-                     cnp.ndarray[DTYPE_t, ndim=2] data):
+    def compute_log_likelihood(self) -> float:
         """
-        Predict risk scores for new data.
+        Compute the log-likelihood of the model.
+        """
+        return self.cpp_model.compute_log_likelihood()
+
+    def predict(self, ndarray[np.float64_t, ndim=2] data):
+        """
+        Predict using the Cox proportional hazards model.
         """
         cdef vector[vector[double]] c_data
         cdef vector[double] c_predictions
-        cdef vector[double] row
+        cdef ndarray[np.float64_t, ndim=1] predictions
         cdef int i, j
 
-        # Convert 2D NumPy array to C++ vector of vectors
+        # Convert NumPy array to C++ vector of vectors
         for i in range(data.shape[0]):
-            row.clear()
+            cdef vector[double] row
             for j in range(data.shape[1]):
                 row.push_back(data[i, j])
             c_data.push_back(row)
 
-        # Call the C++ predict_risk function
-        self.cpp_model.predict_risk(c_data, c_predictions)
+        c_predictions = self.cpp_model.predict(c_data)
 
-        # Convert predictions back to NumPy array
-        return np.array(c_predictions)
+        # Convert C++ vector back to NumPy array
+        predictions = np.empty(len(c_predictions), dtype=np.float64)
+        for i in range(len(c_predictions)):
+            predictions[i] = c_predictions[i]
+
+        return predictions
