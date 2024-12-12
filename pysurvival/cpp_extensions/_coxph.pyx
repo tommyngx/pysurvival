@@ -39,12 +39,13 @@ cdef class CoxPHModel:
         cdef int i, j
 
         # Convert NumPy arrays to C++ vectors
-        for i in range(times.shape[0]):
-            c_times.push_back(times[i])
+        for i in range(data.shape[0]):
+                row.clear()  # Clear the vector to reuse it
+                for j in range(data.shape[1]):
+                    row.push_back(data[i, j])
+                c_data.push_back(row)
 
-        for i in range(events.shape[0]):
-            c_events.push_back(events[i])
-
+        # Convert 2D NumPy array to C++ vector of vectors
         cdef vector[double] row  # Declare vector outside the loop
         for i in range(covariates.shape[0]):
             row.clear()  # Clear the vector to reuse it
