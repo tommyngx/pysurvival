@@ -21,6 +21,18 @@
 
 using namespace std;
 
+#include <vector>
+#include <iostream>
+
+// Declaration for fit_coxph_model
+void fit_coxph_model(
+    const std::vector<double>& times,
+    const std::vector<double>& events,
+    const std::vector<std::vector<double>>& covariates,
+    std::vector<double>& coefficients,
+    double& log_likelihood
+);
+
 
 /* ------------------------------- Functions ------------------------------- */
 vector<int>  argsort(vector<double> v, bool descending);

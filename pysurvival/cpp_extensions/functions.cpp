@@ -16,9 +16,67 @@
 #include <random>
 #include <math.h>       /* fabs */
 #include "functions.h"
+#include <cmath>
+#include <numeric>
+#include <algorithm>
 
 using namespace std;
 
+// Implementation of fit_coxph_model
+void fit_coxph_model(
+    const std::vector<double>& times,
+    const std::vector<double>& events,
+    const std::vector<std::vector<double>>& covariates,
+    std::vector<double>& coefficients,
+    double& log_likelihood
+) {
+    // Placeholder: Number of observations and covariates
+    size_t n = times.size();
+    size_t p = covariates.empty() ? 0 : covariates[0].size();
+
+    // Placeholder: Initialize coefficients and log-likelihood
+    coefficients.assign(p, 0.0);
+    log_likelihood = 0.0;
+
+    // Example logic: Cox model fitting using Newton-Raphson (simplified)
+    std::vector<double> risk_scores(n, 0.0);
+    for (size_t iter = 0; iter < 100; ++iter) { // Iterative optimization
+        std::fill(risk_scores.begin(), risk_scores.end(), 0.0);
+
+        for (size_t i = 0; i < n; ++i) {
+            for (size_t j = 0; j < p; ++j) {
+                risk_scores[i] += covariates[i][j] * coefficients[j];
+            }
+        }
+
+        // Compute log-likelihood
+        log_likelihood = 0.0;
+        for (size_t i = 0; i < n; ++i) {
+            double hazard = exp(risk_scores[i]);
+            double cumulative_hazard = 0.0;
+            for (size_t j = 0; j < n; ++j) {
+                if (times[j] >= times[i]) {
+                    cumulative_hazard += exp(risk_scores[j]);
+                }
+            }
+            if (events[i] == 1) {
+                log_likelihood += risk_scores[i] - log(cumulative_hazard);
+            }
+        }
+
+        // Update coefficients (example gradient ascent, replace with actual formula)
+        for (size_t j = 0; j < p; ++j) {
+            coefficients[j] += 0.001; // Example update step
+        }
+    }
+
+    // Print final coefficients and log-likelihood for debugging
+    std::cout << "Coefficients: ";
+    for (double coeff : coefficients) {
+        std::cout << coeff << " ";
+    }
+    std::cout << "\nLog-Likelihood: " << log_likelihood << std::endl;
+}
 
 /* ------------------------------- Functions ------------------------------- */
 vector<int>  argsort(vector<double> v, bool descending){
