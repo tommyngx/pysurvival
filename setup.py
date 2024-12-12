@@ -3,12 +3,9 @@
 # Updated for Python 3.10 compatibility
 
 import os
-import codecs
-import re
-import glob
+import subprocess
 from setuptools import setup, Extension, find_packages
 import platform
-import subprocess
 
 # Version handling
 VERSION = '0.2.0'
@@ -63,67 +60,67 @@ extra_compile_args = ['-std=c++14', '-O3']
 if platform.system() == 'Darwin':  # macOS specific flags
     extra_compile_args.extend(['-stdlib=libc++', '-mmacosx-version-min=10.9'])
 
-# Python 3.10 compatibility: Remove Py_LIMITED_API
+# Add flags to handle deprecated Unicode APIs
 extra_compile_args.extend([
+    '-DPy_LIMITED_API=0x030A0000',  # Python 3.10
     '-DCYTHON_UNICODE_WCHAR_T',  # Use modern Unicode APIs
-    '-DCYTHON_UNICODE_WIDE',  # Use wide Unicode APIs
+    '-DCYTHON_UNICODE_WIDE',  # Use wide Unicode
 ])
 
 # Define extensions
 ext_modules = [
     Extension(
         name="pysurvival.utils._functions",
-        sources=["pysurvival/cpp_extensions/_functions.cpp", "pysurvival/cpp_extensions/functions.cpp"],
+        sources=[
+            "pysurvival/cpp_extensions/_functions.cpp",
+            "pysurvival/cpp_extensions/functions.cpp"
+        ],
         include_dirs=[numpy_include],
         extra_compile_args=extra_compile_args,
         language="c++",
     ),
-    Extension( 
-        name = "pysurvival.utils._metrics",
-        sources = ["pysurvival/cpp_extensions/_metrics.cpp",
-                   "pysurvival/cpp_extensions/non_parametric.cpp",
-                   "pysurvival/cpp_extensions/metrics.cpp",
-                   "pysurvival/cpp_extensions/functions.cpp",
-                  ],
-        extra_compile_args = extra_compile_args, 
-        language="c++", 
+    Extension(
+        name="pysurvival.utils._metrics",
+        sources=[
+            "pysurvival/cpp_extensions/_metrics.cpp",
+            "pysurvival/cpp_extensions/non_parametric.cpp",
+            "pysurvival/cpp_extensions/metrics.cpp",
+            "pysurvival/cpp_extensions/functions.cpp"
+        ],
         include_dirs=[numpy_include],
-    ),
-    Extension( 
-        name = "pysurvival.models._non_parametric",
-        sources = ["pysurvival/cpp_extensions/_non_parametric.cpp",
-                   "pysurvival/cpp_extensions/non_parametric.cpp",
-                   "pysurvival/cpp_extensions/functions.cpp" 
-                   ],
-        extra_compile_args = extra_compile_args, 
-        language="c++", 
-        include_dirs=[numpy_include],
-    ),
-    Extension( 
-        name = "pysurvival.models._survival_forest",
-        sources = [ "pysurvival/cpp_extensions/_survival_forest.cpp",
-                    "pysurvival/cpp_extensions/survival_forest_data.cpp",
-                    "pysurvival/cpp_extensions/survival_forest_utility.cpp",
-                    "pysurvival/cpp_extensions/survival_forest_tree.cpp",
-                    ],
-        extra_compile_args = extra_compile_args, 
-        language="c++", 
-        include_dirs=[numpy_include],
-    ),
-    Extension( 
-        name="pysurvival.models._coxph",
-        sources=["pysurvival/cpp_extensions/_coxph.cpp", "pysurvival/cpp_extensions/functions.cpp"],
-        include_dirs=[numpy.get_include()],
-        extra_compile_args=['-std=c++14', '-O3'],
+        extra_compile_args=extra_compile_args,
         language="c++",
     ),
-    Extension( 
-        name = "pysurvival.models._svm",
-        sources = [ "pysurvival/cpp_extensions/_svm.cpp", 
-                  ],
-        extra_compile_args = extra_compile_args, 
-        language="c++", 
+    Extension(
+        name="pysurvival.models._survival_forest",
+        sources=[
+            "pysurvival/cpp_extensions/_survival_forest.cpp",
+            "pysurvival/cpp_extensions/survival_forest_data.cpp",
+            "pysurvival/cpp_extensions/survival_forest_utility.cpp",
+            "pysurvival/cpp_extensions/survival_forest_tree.cpp"
+        ],
         include_dirs=[numpy_include],
+        extra_compile_args=extra_compile_args,
+        language="c++",
+    ),
+    Extension(
+        name="pysurvival.models._coxph",
+        sources=[
+            "pysurvival/cpp_extensions/_coxph.cpp",
+            "pysurvival/cpp_extensions/functions.cpp"
+        ],
+        include_dirs=[numpy_include],
+        extra_compile_args=extra_compile_args,
+        language="c++",
+    ),
+    Extension(
+        name="pysurvival.models._svm",
+        sources=[
+            "pysurvival/cpp_extensions/_svm.cpp"
+        ],
+        include_dirs=[numpy_include],
+        extra_compile_args=extra_compile_args,
+        language="c++",
     ),
 ]
 
