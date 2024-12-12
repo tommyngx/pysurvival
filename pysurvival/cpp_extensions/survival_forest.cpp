@@ -1217,7 +1217,8 @@ size_t ForestSurvival::getTreePredictionTerminalNodeID(size_t tree_idx, size_t s
      std::string dependent_variable_name = this->variable_names[this->dependent_varID];
      std::string status_variable_name = this->variable_names[this->status_varID];
      std::vector<double> case_weights;
-     for (int i = 0; i < input_data.size(); ++i){
+     for (std::vector<std::vector<double>>::size_type i = 0; i < input_data.size(); ++i) {
+
       case_weights.push_back(0.);
      }
      
@@ -1273,7 +1274,7 @@ size_t ForestSurvival::getTreePredictionTerminalNodeID(size_t tree_idx, size_t s
      std::string dependent_variable_name = this->variable_names[this->dependent_varID];
      std::string status_variable_name = this->variable_names[this->status_varID];
      std::vector<double> case_weights;
-     for (int i = 0; i < input_data.size(); ++i){
+     for (std::vector<std::vector<double>>::size_type i = 0; i < input_data.size(); ++i) {
       case_weights.push_back(1./input_data.size());
      }
      
@@ -1328,7 +1329,7 @@ size_t ForestSurvival::getTreePredictionTerminalNodeID(size_t tree_idx, size_t s
      std::string dependent_variable_name = this->variable_names[this->dependent_varID];
      std::string status_variable_name = this->variable_names[this->status_varID];
      std::vector<double> case_weights;
-     for (int i = 0; i < input_data.size(); ++i){
+     for (std::vector<std::vector<double>>::size_type i = 0; i < input_data.size(); ++i) {
       case_weights.push_back(1./input_data.size());
      }
      
