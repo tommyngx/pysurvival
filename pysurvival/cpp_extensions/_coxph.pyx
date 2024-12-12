@@ -1,7 +1,6 @@
 # Import required modules
-from libcpp.vector cimport vector
-from numpy cimport ndarray
 cimport numpy as np
+from libcpp.vector cimport vector
 
 # Declare C++ class for Cox Proportional Hazards Model
 cdef extern from "functions.h":
