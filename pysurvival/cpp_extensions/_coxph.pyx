@@ -101,11 +101,12 @@ cdef class CoxPHModel:
         cdef vector[double] c_predictions
 
         # Convert 2D NumPy array to C++ vector of vectors
-        for i in range(data.shape[0]):
-            cdef vector[double] row
-            for j in range(data.shape[1]):
-                row.push_back(data[i, j])
-            c_data.push_back(row)
+        cdef vector[double] row  # Declare the vector outside the loop
+        for i in range(covariates.shape[0]):
+            row.clear()  # Clear the vector for each row
+            for j in range(covariates.shape[1]):
+                row.push_back(covariates[i, j])
+            c_covariates.push_back(row)
 
         self.cpp_model.predict(c_data, c_predictions)
         return np.array([c_predictions[i] for i in range(len(c_predictions))])
