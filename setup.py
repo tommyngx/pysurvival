@@ -1,11 +1,15 @@
 #! /usr/bin/env python
 #
-# Updated for Python 3.10 compatibility
+# Copyright 2019 Square Inc.
+# Apache License Version 2.0
 
 import os
-import subprocess
+import codecs
+import re
+import glob
 from setuptools import setup, Extension, find_packages
 import platform
+import subprocess
 
 # Version handling
 VERSION = '0.2.0'
@@ -41,9 +45,9 @@ def read_long_description():
         return DESCRIPTION  # Fall back to short description
 
 def install_requires():
-    with open(os.path.join(CURRENT_DIR, 'requirements.txt'), 'r') as requirements_file:
-        requirements = requirements_file.readlines()
-    return requirements
+	with open(CURRENT_DIR + 'requirements.txt', 'r') as requirements_file:
+	    requirements = requirements_file.readlines()
+	return requirements
 
 def read_version(*file_paths):
     with codecs.open(os.path.join(CURRENT_DIR, *file_paths), 'r') as fp:
@@ -56,79 +60,76 @@ def read_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 # Compiler settings
-extra_compile_args = [
-    '-std=c++14',
-    '-O3',
-    '-Wall',
-    '-Wno-unused-function',  # Suppress unused function warnings
-    '-fPIC',
-    '-DPY_LIMITED_API=0x030A0000',
-    '-DCYTHON_USE_TYPE_SLOTS=1'
-]
+extra_compile_args = ['-std=c++17', '-O3']  # Update to C++17 for newer Python versions
 if platform.system() == 'Darwin':  # macOS specific flags
-    extra_compile_args.extend(['-stdlib=libc++', '-mmacosx-version-min=10.9'])
+    extra_compile_args.extend(['-stdlib=libc++', '-mmacosx-version-min=10.14'])
 
-# Add flags to handle deprecated Unicode APIs
+# Add flags to handle deprecated Unicode APIs for Python 3.10+
 extra_compile_args.extend([
-    '-DPy_LIMITED_API=0x030A0000',  # Python 3.10
-    '-DCYTHON_UNICODE_WCHAR_T',  # Use modern Unicode APIs
-    '-DCYTHON_UNICODE_WIDE',  # Use wide Unicode
+    '-DPy_LIMITED_API=0x030C0000',  # Python 3.12
+    '-DCYTHON_UNICODE_WCHAR_T',  
+    '-DCYTHON_UNICODE_WIDE',
 ])
 
 # Define extensions
 ext_modules = [
     Extension(
         name="pysurvival.utils._functions",
-        sources=[
-            "pysurvival/cpp_extensions/_functions.cpp",
-            "pysurvival/cpp_extensions/functions.cpp"
-        ],
+        sources=glob.glob("pysurvival/cpp_extensions/_functions*.cpp") + 
+                glob.glob("pysurvival/cpp_extensions/functions*.cpp"),
         include_dirs=[numpy_include],
         extra_compile_args=extra_compile_args,
         language="c++",
     ),
-    Extension(
-        name="pysurvival.utils._metrics",
-        sources=[
-            "pysurvival/cpp_extensions/_metrics.cpp",
-            "pysurvival/cpp_extensions/non_parametric.cpp",
-            "pysurvival/cpp_extensions/metrics.cpp",
-            "pysurvival/cpp_extensions/functions.cpp"
-        ],
+    Extension( 
+        name = "pysurvival.utils._metrics",
+        sources = ["pysurvival/cpp_extensions/_metrics.cpp",
+                   "pysurvival/cpp_extensions/non_parametric.cpp",
+                   "pysurvival/cpp_extensions/metrics.cpp",
+                   "pysurvival/cpp_extensions/functions.cpp",
+                  ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
         include_dirs=[numpy_include],
-        extra_compile_args=extra_compile_args,
-        language="c++",
     ),
-    Extension(
-        name="pysurvival.models._survival_forest",
-        sources=[
-            "pysurvival/cpp_extensions/_survival_forest.cpp",
-            "pysurvival/cpp_extensions/survival_forest_data.cpp",
-            "pysurvival/cpp_extensions/survival_forest_utility.cpp",
-            "pysurvival/cpp_extensions/survival_forest_tree.cpp"
-        ],
+    Extension( 
+        name = "pysurvival.models._non_parametric",
+        sources = ["pysurvival/cpp_extensions/_non_parametric.cpp",
+                   "pysurvival/cpp_extensions/non_parametric.cpp",
+                   "pysurvival/cpp_extensions/functions.cpp" 
+                   ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
         include_dirs=[numpy_include],
-        extra_compile_args=extra_compile_args,
-        language="c++",
     ),
-    Extension(
-        name="pysurvival.models._coxph",
-        sources=[
-            "pysurvival/cpp_extensions/_coxph.cpp",
-            "pysurvival/cpp_extensions/functions.cpp"
-        ],
+    Extension( 
+        name = "pysurvival.models._survival_forest",
+        sources = [ "pysurvival/cpp_extensions/_survival_forest.cpp",
+                    "pysurvival/cpp_extensions/survival_forest_data.cpp",
+                    "pysurvival/cpp_extensions/survival_forest_utility.cpp",
+                    "pysurvival/cpp_extensions/survival_forest_tree.cpp",
+                    "pysurvival/cpp_extensions/survival_forest.cpp", 
+                    ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
         include_dirs=[numpy_include],
-        extra_compile_args=extra_compile_args,
-        language="c++",
     ),
-    Extension(
-        name="pysurvival.models._svm",
-        sources=[
-            "pysurvival/cpp_extensions/_svm.cpp"
-        ],
+    Extension( 
+        name = "pysurvival.models._coxph",
+        sources = [ "pysurvival/cpp_extensions/_coxph.cpp",
+                    "pysurvival/cpp_extensions/functions.cpp" 
+                  ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
         include_dirs=[numpy_include],
-        extra_compile_args=extra_compile_args,
-        language="c++",
+    ),
+    Extension( 
+        name = "pysurvival.models._svm",
+        sources = [ "pysurvival/cpp_extensions/_svm.cpp", 
+                  ],
+        extra_compile_args = extra_compile_args, 
+        language="c++", 
+        include_dirs=[numpy_include],
     ),
 ]
 
@@ -144,12 +145,16 @@ setup(
     packages=find_packages(exclude=('tests',)),
     ext_modules=ext_modules,
     install_requires=[
-        'numpy>=1.21.0',
-        'scipy>=1.8.0',
-        'pandas>=1.4.0',
-        'scikit-learn>=1.0.2',
+        'numpy>=1.24.0',
+        'scipy>=1.10.0',
+        'pandas>=2.0.0',
+        'scikit-learn>=1.2.0',
+        'torch>=2.0.0',
+        'matplotlib>=3.7.0',
+        'progressbar>=2.5',
+        'pyarrow>=12.0.0',
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',  # Support 3.8 through 3.12
     include_package_data=True,
     license=LICENSE,
     package_data={'': ['*.csv'],},
@@ -161,10 +166,11 @@ setup(
         'Operating System :: MacOS',
         'Operating System :: Unix',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',

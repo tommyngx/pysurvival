@@ -3,5 +3,6 @@ include pysurvival/datasets/*.csv
 include *.txt
 recursive-include docs *.txt *.js *.css *.html *.svg *.png *.yml
 recursive-include pysurvival/datasets *
+recursive-include pysurvival/cpp_extensions *.cpp *.h  # Add C++ files explicitly
 graft pysurvival
 global-exclude *.py[co]
