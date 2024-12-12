@@ -37,7 +37,7 @@ cdef class CoxPHModel:
         cdef vector[double] c_times = vector[double](times.shape[0])
         cdef vector[double] c_events = vector[double](events.shape[0])
         cdef vector[vector[double]] c_covariates
-        cdef vector[double] row  # Declare vector outside the loop
+        cdef vector[double] row  # Declare the row vector here
         cdef int i, j
 
         # Convert 1D NumPy arrays to C++ vectors
