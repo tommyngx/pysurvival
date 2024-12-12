@@ -73,8 +73,7 @@ extra_compile_args.extend([
 ext_modules = [
     Extension(
         name="pysurvival.utils._functions",
-        sources=glob.glob("pysurvival/cpp_extensions/_functions*.cpp") + 
-                glob.glob("pysurvival/cpp_extensions/functions*.cpp"),
+        sources=["pysurvival/cpp_extensions/_functions.cpp", "pysurvival/cpp_extensions/functions.cpp"],
         include_dirs=[numpy_include],
         extra_compile_args=extra_compile_args,
         language="c++",
@@ -106,7 +105,6 @@ ext_modules = [
                     "pysurvival/cpp_extensions/survival_forest_data.cpp",
                     "pysurvival/cpp_extensions/survival_forest_utility.cpp",
                     "pysurvival/cpp_extensions/survival_forest_tree.cpp",
-                    "pysurvival/cpp_extensions/survival_forest.cpp", 
                     ],
         extra_compile_args = extra_compile_args, 
         language="c++", 
@@ -116,7 +114,7 @@ ext_modules = [
         name="pysurvival.utils._coxph",
         sources=["pysurvival/cpp_extensions/_coxph.cpp", "pysurvival/cpp_extensions/functions.cpp"],
         include_dirs=[numpy_include],  # Add numpy include directory
-        extra_compile_args=['-std=c++14', '-O3', '-DCYTHON_UNICODE_WCHAR_T', '-DCYTHON_UNICODE_WIDE'],
+        extra_compile_args=extra_compile_args,
         language="c++", 
     ),
     Extension( 
