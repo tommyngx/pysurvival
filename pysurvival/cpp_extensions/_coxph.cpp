@@ -1193,6 +1193,18 @@ struct __pyx_opt_args_10pysurvival_6models_6_coxph_11_CoxPHModel_newton_optimiza
  * 
  *     """ This object will help speed up the calculation of the Cox PH model.
  */
+#include <vector>
+
+class _CoxPHModel {
+public:
+    _CoxPHModel();
+    ~_CoxPHModel();
+
+    void fit(const std::vector<double>& times, const std::vector<double>& events, const std::vector<std::vector<double>>& covariates);
+    std::vector<double> predict(const std::vector<std::vector<double>>& covariates);
+};
+
+
 struct __pyx_obj_10pysurvival_6models_6_coxph__CoxPHModel {
   PyObject_HEAD
   struct __pyx_vtabstruct_10pysurvival_6models_6_coxph__CoxPHModel *__pyx_vtab;

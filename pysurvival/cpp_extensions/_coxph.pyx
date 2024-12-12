@@ -59,3 +59,30 @@ def fit_model(
     fit_coxph_model(c_times, c_events, c_covariates, c_coefficients, c_log_likelihood)
 
     return np.array(c_coefficients), c_log_likelihood
+
+
+cdef extern from "_coxph.cpp":
+    cdef cppclass _CoxPHModel:
+        _CoxPHModel()
+        void fit(vector[double] times, vector[double] events, vector[vector[double]] covariates)
+        vector[double] predict(vector[vector[double]] covariates)
+
+cdef class CoxPHModel:
+    cdef _CoxPHModel* cpp_model
+
+    def __cinit__(self):
+        self.cpp_model = new _CoxPHModel()
+
+    def __dealloc__(self):
+        del self.cpp_model
+
+    def fit(self, np.ndarray[double, ndim=1] times, np.ndarray[double, ndim=1] events, np.ndarray[double, ndim=2] covariates):
+        cdef vector[double] c_times = times.tolist()
+        cdef vector[double] c_events = events.tolist()
+        cdef vector[vector[double]] c_covariates = [[cov for cov in row] for row in covariates.tolist()]
+        self.cpp_model.fit(c_times, c_events, c_covariates)
+
+    def predict(self, np.ndarray[double, ndim=2] covariates):
+        cdef vector[vector[double]] c_covariates = [[cov for cov in row] for row in covariates.tolist()]
+        cdef vector[double] predictions = self.cpp_model.predict(c_covariates)
+        return list(predictions)
