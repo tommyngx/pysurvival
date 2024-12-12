@@ -46,7 +46,7 @@ cdef class CoxPHModel:
         """
         cdef vector[double] c_times, c_events, c_coefficients
         cdef vector[vector[double]] c_covariates
-        cdef double c_log_likelihood
+        cdef double c_log_likelihood = 0.0
         cdef vector[double] row
 
         # Convert 1D NumPy arrays to C++ vectors
