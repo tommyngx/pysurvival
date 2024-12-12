@@ -23,22 +23,19 @@ cdef extern from "functions.h":
         )
 
 cdef class CoxPHModel:
-    cdef _CoxPHModel* cpp_model
+    cdef _CoxPHModel cpp_model
 
     def __cinit__(self):
         """
         Initialize the C++ model.
         """
-        self.cpp_model = new _CoxPHModel()
-        if self.cpp_model is NULL:
-            raise MemoryError("Failed to allocate memory for _CoxPHModel")
+        self.cpp_model = _CoxPHModel()
 
     def __dealloc__(self):
         """
         Clean up the C++ model.
         """
-        if self.cpp_model is not NULL:
-            del self.cpp_model
+        # Nothing to do as Cython automatically cleans up stack-allocated objects
 
     def fit_model(self, 
                   cnp.ndarray[DTYPE_t, ndim=1] times,
