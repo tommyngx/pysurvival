@@ -874,7 +874,8 @@ void ForestSurvival::initInternal(std::string status_variable_name) {
 void ForestSurvival::growInternal() {
   trees.reserve(num_trees);
   for (size_t i = 0; i < num_trees; ++i) {
-    trees.push_back(make_unique<TreeSurvival>(&unique_timepoints, status_varID, &response_timepointIDs));
+    trees.push_back(std::make_unique<TreeSurvival>(
+    &unique_timepoints, static_cast<size_t>(status_varID), &response_timepointIDs));
   }
 }
 
@@ -1008,6 +1009,7 @@ size_t ForestSurvival::getTreePredictionTerminalNodeID(size_t tree_idx, size_t s
       // variable names to be always selected
       std::vector<std::string> always_split_variable_names;
       bool use_always_split_variable_names;
+      (void)use_always_split_variable_names  = false;
       always_split_variable_names.clear();
 
       // Dealing with unordered factor covariates-> all features are numerical so it doesn't apply
@@ -1048,7 +1050,7 @@ size_t ForestSurvival::getTreePredictionTerminalNodeID(size_t tree_idx, size_t s
 
       // Adjusting the number of threads to be <= number of cores
       uint max_num_threads = (uint) thread::hardware_concurrency();
-      if ((num_threads < 0) | (num_threads >= max_num_threads)){
+      if (num_threads < 0 || static_cast<unsigned int>(num_threads) >= max_num_threads) {
         num_threads = max_num_threads; 
       } else if(num_threads == 0){
             num_threads = 1; 
