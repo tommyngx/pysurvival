@@ -2,6 +2,34 @@
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include <numpy/arrayobject.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Function declarations with attributes to prevent unused warnings
+static PyObject* __attribute__((used)) __Pyx_CyFunction_Vectorcall_FASTCALL_KEYWORDS_METHOD(
+    PyObject *func, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+
+static PyObject* __attribute__((used)) __Pyx_CyFunction_Vectorcall_FASTCALL_KEYWORDS(
+    PyObject *func, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+
+static PyObject* __attribute__((used)) __Pyx_CyFunction_Vectorcall_O(
+    PyObject *func, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+
+static PyObject* __attribute__((used)) __Pyx_CyFunction_Vectorcall_NOARGS(
+    PyObject *func, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+
+static PyTypeObject* __attribute__((used)) __Pyx_FetchCommonType(PyTypeObject* type);
+
+static int __attribute__((used)) __Pyx_VerifyCachedType(
+    PyObject *cached_type, const char *name, Py_ssize_t basicsize, Py_ssize_t flags);
+
+#ifdef __cplusplus
+}
+#endif
+
 #ifndef Py_PYTHON_H
     #error Python headers needed to compile C extensions, please install development version of Python.
 #elif PY_VERSION_HEX < 0x02060000 || (0x03000000 <= PY_VERSION_HEX && PY_VERSION_HEX < 0x03030000)
@@ -3328,7 +3356,7 @@ static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
                         if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
                             __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
                         } else if (8 * sizeof(int) >= 3 * PyLong_SHIFT) {
-                            return (int) (((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
+                            return (int) (((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
                         }
                     }
                     break;
@@ -3337,7 +3365,7 @@ static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
                         if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
                             __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
                         } else if (8 * sizeof(int) >= 4 * PyLong_SHIFT) {
-                            return (int) (((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
+                            return (int) ((((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
                         }
                     }
                     break;
