@@ -3,8 +3,8 @@
 
 # Importing Numpy
 # -----------------
-import numpy as np
-cimport numpy as cnp
+import numpy as np  # Standard Python import for NumPy
+cimport numpy as cnp  # Cython import for NumPy
 
 # Importing Cython and C++ libraries
 # -----------------------------------
@@ -33,9 +33,9 @@ ctypedef cnp.float64_t DTYPE_t  # 64-bit floating point
 @cython.boundscheck(False)  # Turn off bounds-checking for speed
 @cython.wraparound(False)   # Turn off negative indexing for speed
 def fit_model(
-    np.ndarray[DTYPE_t, ndim=1] times,
-    np.ndarray[DTYPE_t, ndim=1] events,
-    np.ndarray[DTYPE_t, ndim=2] covariates
+    cnp.ndarray[DTYPE_t, ndim=1] times,       # Change np.ndarray to cnp.ndarray
+    cnp.ndarray[DTYPE_t, ndim=1] events,      # Change np.ndarray to cnp.ndarray
+    cnp.ndarray[DTYPE_t, ndim=2] covariates   # Change np.ndarray to cnp.ndarray
 ):
     """
     Fit Cox proportional hazards model.
@@ -53,7 +53,7 @@ def fit_model(
     cdef vector[double] c_events = events.tolist()
     cdef vector[vector[double]] c_covariates = [row.tolist() for row in covariates]
     cdef vector[double] c_coefficients
-    cdef double c_log_likelihood
+    cdef double c_log_likelihood = 0.0  # Initialize variable
 
     # Call C++ function
     fit_coxph_model(c_times, c_events, c_covariates, c_coefficients, c_log_likelihood)
