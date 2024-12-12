@@ -111,11 +111,11 @@ ext_modules = [
         include_dirs=[numpy_include],
     ),
     Extension( 
-        name="pysurvival.utils._coxph",
+        name="pysurvival.models._coxph",
         sources=["pysurvival/cpp_extensions/_coxph.cpp", "pysurvival/cpp_extensions/functions.cpp"],
-        include_dirs=[numpy_include],  # Add numpy include directory
-        extra_compile_args=extra_compile_args,
-        language="c++", 
+        include_dirs=[numpy.get_include()],
+        extra_compile_args=['-std=c++14', '-O3', '-DCYTHON_UNICODE_WCHAR_T', '-DCYTHON_UNICODE_WIDE'],
+        language="c++"
     ),
     Extension( 
         name = "pysurvival.models._svm",
