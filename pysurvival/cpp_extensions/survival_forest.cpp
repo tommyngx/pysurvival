@@ -230,7 +230,8 @@ void Forest::grow() {
 
   // Init trees, create a seed for each tree, based on main seed
   std::uniform_int_distribution<uint> udist;
-  for (size_t i = 0; i < num_trees; ++i) {
+  for (std::vector<std::vector<double>>::size_type i = 0; i < input_data.size(); ++i) {
+
     uint tree_seed;
     if (seed == 0) {
       tree_seed = udist(random_number_generator);
