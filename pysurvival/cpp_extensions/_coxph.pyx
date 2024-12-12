@@ -2,14 +2,15 @@
 cimport numpy as np
 import numpy as np
 from libcpp.vector cimport vector
-from libcpp.memory cimport unique_ptr
+from libcpp.memory cimport unique_ptr, make_unique
+from cython.operator cimport dereference as deref
 
 # Declare C++ class for Cox Proportional Hazards Model
 cdef extern from "functions.h":
-    cdef cppclass _CoxPHModel:
-        _CoxPHModel() nogil
-        void fit_model(vector[double]& times, vector[double]& events, vector[vector[double]]& covariates) nogil
-        vector[double] predict(vector[vector[double]]& data) nogil
+    cdef cppclass _CoxPHModel nogil:
+        _CoxPHModel()
+        void fit_model(vector[double]& times, vector[double]& events, vector[vector[double]]& covariates)
+        vector[double] predict(vector[vector[double]]& data)
 
 # Define the Python wrapper class
 cdef class CoxPHModel:
@@ -19,7 +20,7 @@ cdef class CoxPHModel:
         """
         Initialize the C++ model.
         """
-        self.cpp_model = unique_ptr[_CoxPHModel](new _CoxPHModel())
+        self.cpp_model = make_unique[_CoxPHModel]()
 
     def fit(self, np.ndarray[np.float64_t, ndim=1] times,
             np.ndarray[np.float64_t, ndim=1] events,
@@ -44,7 +45,7 @@ cdef class CoxPHModel:
                 row.push_back(covariates[i, j])
             c_covariates.push_back(row)
 
-        self.cpp_model.get().fit_model(c_times, c_events, c_covariates)
+        deref(self.cpp_model).fit_model(c_times, c_events, c_covariates)
 
     def predict(self, np.ndarray[np.float64_t, ndim=2] data):
         """
@@ -63,7 +64,7 @@ cdef class CoxPHModel:
                 row.push_back(data[i, j])
             c_data.push_back(row)
 
-        c_predictions = self.cpp_model.get().predict(c_data)
+        c_predictions = deref(self.cpp_model).predict(c_data)
 
         # Convert C++ vector to NumPy array
         predictions = np.zeros(c_predictions.size(), dtype=np.float64)
