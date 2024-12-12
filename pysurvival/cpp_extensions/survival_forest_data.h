@@ -40,6 +40,7 @@ namespace ranger {
 			if (col < num_cols_no_snp) {
 				return data[col * num_rows + row];
 			}
+			return 0.0;
 		};
 
 		size_t getVariableID(const std::string& variable_name) const;
