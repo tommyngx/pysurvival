@@ -1,14 +1,13 @@
 # _coxph.pyx
-# Updated for Python 3.10 and NumPy compatibility
+# Updated for Python 3.10 and Cython compatibility
 # cython: language_level=3
 
 # Define NumPy version to avoid deprecated API warnings
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 from libcpp.vector cimport vector
-from libcpp cimport bool
 from libc.stdlib cimport malloc, free
-from numpy cimport ndarray, float64_t, int32_t
+from numpy cimport ndarray, float64_t
 import numpy as np
 cimport numpy as cnp
 
@@ -31,7 +30,10 @@ cdef class CoxPHModel:
         """
         Initialize the C++ model.
         """
-        self.cpp_model = new _CoxPHModel()
+        self.cpp_model = <_CoxPHModel*>malloc(sizeof(_CoxPHModel))
+        if self.cpp_model is NULL:
+            raise MemoryError("Failed to allocate memory for _CoxPHModel")
+        self.cpp_model = _CoxPHModel()
 
     def __dealloc__(self):
         """
@@ -40,28 +42,28 @@ cdef class CoxPHModel:
         if self.cpp_model is not NULL:
             del self.cpp_model
 
-    def fit_model(self, times, events, covariates):
+    def fit_model(self, ndarray[float64_t, ndim=1] times, 
+                  ndarray[float64_t, ndim=1] events, 
+                  ndarray[float64_t, ndim=2] covariates):
         """
         Fit the Cox Proportional Hazards model.
         :param times: Array of time-to-event data
         :param events: Array of event indicators (1 for event, 0 for censored)
         :param covariates: 2D array of covariates
         """
-        cdef vector[double] c_times, c_events
+        cdef vector[double] c_times = vector[double](times)
+        cdef vector[double] c_events = vector[double](events)
         cdef vector[vector[double]] c_covariates
         cdef vector[double] c_coefficients
         cdef double c_log_likelihood
 
-        # Convert inputs to C++ vectors
-        c_times = <vector[double]>times
-        c_events = <vector[double]>events
         for row in covariates:
-            c_covariates.push_back(<vector[double]>row)
+            c_covariates.push_back(vector[double](row))
 
         # Call the C++ fit_model function
         self.cpp_model.fit_model(c_times, c_events, c_covariates, c_coefficients, c_log_likelihood)
 
-        return c_coefficients, c_log_likelihood
+        return np.array(c_coefficients), c_log_likelihood
 
     def get_baseline_hazard(self):
         """
@@ -81,7 +83,7 @@ cdef class CoxPHModel:
         self.cpp_model.get_baseline_survival(c_survivals)
         return np.array(c_survivals)
 
-    def predict(self, data):
+    def predict(self, ndarray[float64_t, ndim=2] data):
         """
         Predict survival probabilities for new data.
         :param data: 2D array of covariates
@@ -90,9 +92,8 @@ cdef class CoxPHModel:
         cdef vector[vector[double]] c_data
         cdef vector[double] c_predictions
 
-        # Convert input to C++ vector
         for row in data:
-            c_data.push_back(<vector[double]>row)
+            c_data.push_back(vector[double](row))
 
         self.cpp_model.predict(c_data, c_predictions)
         return np.array(c_predictions)
