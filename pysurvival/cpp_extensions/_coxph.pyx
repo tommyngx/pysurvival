@@ -16,6 +16,13 @@ from libcpp.map cimport map
 from libcpp cimport bool
 from libcpp.algorithm cimport sort
 
+# Update string declarations
+cdef extern from "<string>" namespace "std":
+    cdef cppclass string:
+        string() nogil
+        string(const char*) nogil
+        const char* c_str() nogil
+        size_t size() nogil
 
 # Importing C++ specific functions
 #----------------------------------
@@ -50,10 +57,11 @@ cdef extern from "<math.h>" nogil:
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.nonecheck(False)
-cdef double norm(cnp.ndarray[double, ndim=1] x, bool with_sqrt=True ):
+cdef double norm(np.ndarray[double, ndim=1] x, bool with_sqrt=True) nogil:
     cdef:
         double result = 0.
-        size_t i, N = x.shape[0]
+        Py_ssize_t i
+        Py_ssize_t N = x.shape[0]
     for i in range(N):
         result += x[i]*x[i]
         
@@ -67,10 +75,12 @@ cdef double norm(cnp.ndarray[double, ndim=1] x, bool with_sqrt=True ):
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.nonecheck(False)
-cdef vector[double] reverse(vector[double] x):
+cdef vector[double] reverse(const vector[double]& x) nogil:
     cdef:
-        size_t i, N = x.size()
+        Py_ssize_t i
+        Py_ssize_t N = x.size()
         vector[double] v
+    v.reserve(N)  # Pre-allocate memory
     for i in range(N):
         v.push_back(x[N-i-1])
     return v
@@ -81,21 +91,13 @@ cdef vector[double] reverse(vector[double] x):
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.nonecheck(False)
-cpdef map[ int, vector[double] ] _baseline_functions(  vector[double] score
-                                                     , vector[double] T
-                                                     , vector[double] E ):
-    """ This method provides the calculations to estimate 
-        the baseline survival function. This function assumes that X, T, E
-        are sorted in a descending order.
-        
-        The formula used to calculate the baseline hazard is:
-            h_0( T ) = |D(T)|/Sum( exp( <x_j, W> ), j in R(T) ) where:
-                - T is a time of failure
-                - |D(T)| is the number of failures at time T
-                - R(T) is the set of at risk uites at time T 
-        https://github.com/cran/survival/blob/master/R/basehaz.R
-        http://www.utdallas.edu/~pkc022000/6390/SP06/NOTES/survival_week_5.pdf
-        https://stats.stackexchange.com/questions/46532/cox-baseline-hazard
+cpdef map[int, vector[double]] _baseline_functions(
+    const vector[double]& score,
+    const vector[double]& T,
+    const vector[double]& E) nogil:
+    """
+    Estimate baseline survival function. 
+    Assumes X, T, E are sorted in descending order.
     """
     
     cdef:
@@ -426,4 +428,3 @@ cdef class _CoxPHModel :
         self.inv_Hessian = inv_Hessian
         self.loss_values  = loss_values
         self.grad2_values = grad2_values
-    
