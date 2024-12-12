@@ -230,7 +230,7 @@ void Forest::grow() {
 
   // Init trees, create a seed for each tree, based on main seed
   std::uniform_int_distribution<uint> udist;
-  for (std::vector<std::vector<double>>::size_type i = 0; i < input_data.size(); ++i) {
+  for (std::vector<std::vector<double>>::size_type i = 0; i < this->input_data.size(); ++i) {
 
     uint tree_seed;
     if (seed == 0) {
@@ -805,9 +805,9 @@ void ForestSurvival::loadForest(size_t dependent_varID, size_t num_trees,
   // Create trees
   trees.reserve(num_trees);
   for (size_t i = 0; i < num_trees; ++i) {
-    trees.push_back(
-        make_unique<TreeSurvival>(forest_child_nodeIDs[i], forest_split_varIDs[i], forest_split_values[i],
-            forest_chf[i], &this->unique_timepoints, &response_timepointIDs));
+    trees.push_back(std::make_unique<TreeSurvival>(
+    forest_child_nodeIDs[i], forest_split_varIDs[i], forest_split_values[i],
+    forest_chf[i], &this->unique_timepoints, &response_timepointIDs));
   }
 
   // Create thread ranges
@@ -1009,7 +1009,7 @@ size_t ForestSurvival::getTreePredictionTerminalNodeID(size_t tree_idx, size_t s
       // variable names to be always selected
       std::vector<std::string> always_split_variable_names;
       bool use_always_split_variable_names;
-      (void)use_always_split_variable_names  = false;
+      (void)use_always_split_variable_names;
       always_split_variable_names.clear();
 
       // Dealing with unordered factor covariates-> all features are numerical so it doesn't apply
