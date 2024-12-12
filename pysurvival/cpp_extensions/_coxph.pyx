@@ -16,33 +16,13 @@ cdef extern from "_coxph.cpp":
 
 # Python wrapper class for `_CoxPHModel`
 cdef class CoxPHModel:
-    cdef _CoxPHModel* cpp_model
-
-    cdef void init_model(self):
-        """
-        Allocate memory for the C++ model.
-        """
-        self.cpp_model = new _CoxPHModel()
-
-    cdef void destroy_model(self):
-        """
-        Free memory for the C++ model.
-        """
-        if self.cpp_model is not NULL:
-            del self.cpp_model
-            self.cpp_model = NULL
+    cdef _CoxPHModel cpp_model  # Declare C++ object (not pointer)
 
     def __cinit__(self):
         """
         Initialize the Python class and the C++ model.
         """
-        self.init_model()
-
-    def __dealloc__(self):
-        """
-        Clean up the Python class and the C++ model.
-        """
-        self.destroy_model()
+        self.cpp_model = _CoxPHModel()  # Directly initialize C++ object
 
     def fit(self, cnp.ndarray[cnp.float64_t, ndim=1] times, 
                   cnp.ndarray[cnp.float64_t, ndim=1] events, 
